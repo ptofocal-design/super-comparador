@@ -1,0 +1,689 @@
+<title>Precio por Unidad</title>
+<meta charset="UTF-8">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="theme-color" content="#2F6E4F">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;700&display=swap">
+<style>
+  :root{
+    --paper:#EFEDE2;
+    --card:#F8F7F0;
+    --ink:#26251F;
+    --ink-soft:#726F5E;
+    --line:#CDC9B4;
+    --accent:#2F6E4F;
+    --accent-soft:#E3EEE6;
+    --accent-ink:#153826;
+    --warn:#A6402F;
+    --shadow: 0 14px 34px -20px rgba(38,37,31,.45);
+    --font-display:'Archivo','Arial Narrow',sans-serif;
+    --font-body:'Work Sans',system-ui,-apple-system,sans-serif;
+    --font-mono:'IBM Plex Mono','SFMono-Regular',Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#1B1A16; --card:#242219; --ink:#EDEAD8; --ink-soft:#9C9987;
+      --line:#3D3A2C; --accent:#5FBF8F; --accent-soft:#20362A; --accent-ink:#CFF3DF;
+      --warn:#E08972; --shadow:0 14px 34px -18px rgba(0,0,0,.65);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#1B1A16; --card:#242219; --ink:#EDEAD8; --ink-soft:#9C9987;
+    --line:#3D3A2C; --accent:#5FBF8F; --accent-soft:#20362A; --accent-ink:#CFF3DF;
+    --warn:#E08972; --shadow:0 14px 34px -18px rgba(0,0,0,.65);
+  }
+
+  *{box-sizing:border-box;}
+  [hidden]{display:none !important;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--font-body); font-size:15px; line-height:1.45;
+    display:flex; justify-content:center; padding:28px 14px 60px;
+  }
+  .app{width:100%; max-width:440px; display:flex; flex-direction:column; gap:16px;}
+
+  .ticket{
+    background:var(--card); border-radius:10px; box-shadow:var(--shadow);
+    padding:22px 20px 18px; position:relative;
+  }
+  .ticket-edge{
+    height:12px; margin:0 -20px; margin-top:18px;
+    background:
+      linear-gradient(135deg, var(--paper) 50%, transparent 50%) 0 0/12px 12px repeat-x,
+      linear-gradient(-135deg, var(--paper) 50%, transparent 50%) 0 0/12px 12px repeat-x;
+  }
+
+  .store-line{
+    font-family:var(--font-mono); font-size:11px; letter-spacing:.14em;
+    color:var(--ink-soft); text-align:center; text-transform:uppercase;
+  }
+  .rule{border:none; border-top:1.5px dashed var(--line); margin:14px 0;}
+
+  .back-link{
+    display:inline-flex; background:none; border:none; color:var(--ink-soft);
+    font-family:var(--font-body); font-size:12.5px; font-weight:600; cursor:pointer;
+    padding:0 0 12px; text-decoration:underline; text-underline-offset:2px;
+  }
+  .back-link:hover{color:var(--accent);}
+
+  /* Screen 1: category grid */
+  .cat-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:9px; margin-top:16px;}
+  .cat-btn{
+    display:flex; flex-direction:column; align-items:center; gap:7px;
+    background:var(--paper); border:1.5px solid var(--line); border-radius:12px;
+    padding:14px 4px 10px; cursor:pointer; color:var(--ink); font-family:var(--font-body);
+  }
+  .cat-btn:hover{border-color:var(--accent);}
+  .cat-icon{width:30px; height:30px; color:var(--ink-soft);}
+  .cat-icon svg{width:100%; height:100%; display:block;}
+  .cat-btn:hover .cat-icon{color:var(--accent);}
+  .cat-label{font-size:11px; font-weight:600; text-align:center; line-height:1.25;}
+
+  /* Screen 2: form */
+  .form-title{
+    font-family:var(--font-display); font-weight:800; font-size:24px; color:var(--ink);
+    text-align:center; margin-top:2px; text-wrap:balance;
+  }
+  .hoja-toggle-row{display:flex; align-items:center; justify-content:center; gap:9px; margin:12px 0 2px;}
+  .hoja-toggle-row .subsection-label{margin:0;}
+
+  .subsection-label{
+    font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em;
+    color:var(--ink-soft); margin:12px 0 7px;
+  }
+  .chip-row{display:flex; gap:8px; flex-wrap:wrap;}
+  .chip{
+    font-family:var(--font-mono); font-size:13px; font-weight:500;
+    border:1.5px solid var(--line); background:transparent; color:var(--ink-soft);
+    border-radius:7px; padding:7px 11px; cursor:pointer;
+  }
+  .chip.active{background:var(--accent); border-color:var(--accent); color:var(--card); font-weight:700;}
+  .chip.chip-sm{padding:5px 9px; font-size:11.5px; border-radius:6px;}
+
+  .custom-size-fields{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:9px;}
+  .custom-size-fields label{
+    display:flex; flex-direction:column; gap:3px; font-size:10.5px; color:var(--ink-soft);
+    font-weight:600; text-transform:uppercase; letter-spacing:.04em;
+  }
+  .custom-size-fields input{
+    font-family:var(--font-mono); font-size:14px; border:1.5px solid var(--line);
+    border-radius:7px; padding:6px 8px; background:var(--paper); color:var(--ink);
+  }
+
+  .items{display:flex; flex-direction:column; gap:12px; margin-top:14px;}
+  .item-card{
+    background:var(--card); border:1.5px solid var(--line); border-radius:10px;
+    padding:14px; display:flex; flex-direction:column; gap:6px; transition:border-color .15s;
+  }
+  .item-card.is-best{border-color:var(--accent);}
+  .item-top{display:flex; align-items:center; gap:8px; margin-bottom:4px;}
+  .item-name{
+    flex:1; font-family:var(--font-display); font-weight:700; font-size:16px;
+    border:none; background:transparent; color:var(--ink); padding:2px; min-width:0;
+  }
+  .item-name::placeholder{color:var(--ink-soft); opacity:.7;}
+  .item-name:focus{outline:none;}
+  .item-remove{
+    width:28px; height:28px; border-radius:7px; border:1.5px solid var(--line);
+    background:transparent; color:var(--ink-soft); font-size:16px; line-height:1; cursor:pointer;
+    flex-shrink:0;
+  }
+  .item-remove:hover{border-color:var(--warn); color:var(--warn);}
+
+  .item-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px 10px;}
+  .item-card[data-mode="preset"] .item-grid{grid-template-columns:1fr;}
+  .item-grid label{
+    display:flex; flex-direction:column; gap:3px; font-size:11px; color:var(--ink-soft);
+    font-weight:600; text-transform:uppercase; letter-spacing:.04em;
+  }
+  .item-grid input[type="number"]{
+    font-family:var(--font-mono); font-size:15px; font-weight:500; color:var(--ink);
+    border:1.5px solid var(--line); border-radius:7px; padding:7px 8px; background:var(--paper);
+    width:100%; font-variant-numeric:tabular-nums;
+  }
+  .qty-row{display:flex; gap:6px;}
+  .qty-row input{flex:1; min-width:0;}
+  .unit-toggle{display:flex; border:1.5px solid var(--line); border-radius:7px; overflow:hidden; flex-shrink:0;}
+  .utoggle{
+    font-family:var(--font-mono); font-size:11.5px; font-weight:600; border:none;
+    background:transparent; color:var(--ink-soft); padding:0 9px; cursor:pointer;
+  }
+  .utoggle.active{background:var(--accent); color:var(--card);}
+
+  .size-picker{margin-top:2px;}
+  .size-picker .subsection-label{margin:6px 0 6px;}
+
+  .pack-row{margin-top:2px;}
+  .pack-toggle{
+    display:flex; align-items:center; gap:7px; font-size:12.5px; color:var(--ink-soft);
+    cursor:pointer; font-weight:500; text-transform:none; letter-spacing:0;
+  }
+  .pack-toggle input{width:15px; height:15px; accent-color:var(--accent); flex-shrink:0;}
+  .pack-fields.custom-size-fields{grid-template-columns:1fr; max-width:150px; margin-top:8px;}
+
+  .item-result{
+    display:flex; align-items:baseline; justify-content:space-between; gap:8px;
+    border-top:1.5px dashed var(--line); padding-top:9px; margin-top:4px; flex-wrap:wrap;
+  }
+  .result-total{font-size:11.5px; color:var(--ink-soft);}
+  .result-unitprice{font-family:var(--font-mono); font-weight:700; font-size:17px; color:var(--ink-soft);}
+  .item-card.is-best .result-unitprice{color:var(--accent);}
+  .badge-best{
+    font-family:var(--font-mono); font-size:10px; font-weight:700; letter-spacing:.08em;
+    color:var(--accent-ink); background:var(--accent-soft); border:1px solid var(--accent);
+    border-radius:5px; padding:2px 6px; transform:rotate(-2deg); white-space:nowrap;
+  }
+
+  .add-btn{
+    margin-top:12px; font-family:var(--font-body); font-weight:600; font-size:14px; cursor:pointer;
+    border-radius:9px; padding:11px; width:100%; background:transparent; border:1.5px dashed var(--line);
+    color:var(--ink-soft);
+  }
+  .add-btn:hover{border-color:var(--accent); color:var(--accent);}
+  .add-btn[disabled]{opacity:.4; cursor:not-allowed;}
+  .add-btn[disabled]:hover{border-color:var(--line); color:var(--ink-soft);}
+
+  .items-counter{text-align:center; font-family:var(--font-mono); font-size:11px; color:var(--ink-soft); letter-spacing:.05em; margin-top:8px;}
+
+  .summary{
+    margin-top:14px; background:var(--accent-soft); border:1.5px solid var(--accent); border-radius:10px;
+    padding:13px 14px; text-align:center; font-size:13.5px; color:var(--accent-ink);
+  }
+  .summary strong{font-family:var(--font-mono); font-size:15px;}
+  .summary.empty{background:var(--card); border-color:var(--line); color:var(--ink-soft);}
+
+  .footer-row{display:flex; justify-content:center; margin-top:4px;}
+  .reset-btn{
+    font-family:var(--font-body); font-weight:600; font-size:12.5px; cursor:pointer;
+    background:transparent; border:none; color:var(--ink-soft); text-decoration:underline;
+    text-underline-offset:2px; padding:4px;
+  }
+  .reset-btn:hover{color:var(--ink);}
+
+  .chip:focus-visible, .cat-btn:focus-visible, .utoggle:focus-visible,
+  .add-btn:focus-visible, .item-remove:focus-visible, input:focus-visible, .back-link:focus-visible,
+  .reset-btn:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important;} }
+</style>
+
+<div class="app">
+
+  <section class="ticket" id="screenCategory">
+    <div class="store-line">super comparador · elegí qué comprar</div>
+    <div class="cat-grid" id="catGrid"></div>
+    <div class="ticket-edge"></div>
+  </section>
+
+  <section class="ticket" id="screenForm" hidden>
+    <button class="back-link" id="backFromForm" type="button">‹ Elegir otro producto</button>
+    <div class="store-line" id="formBreadcrumb"></div>
+    <div class="form-title" id="formTitle"></div>
+    <div class="hoja-toggle-row" id="hojaToggleRow" hidden>
+      <span class="subsection-label">Hoja</span>
+      <div class="chip-row" id="hojaChips">
+        <button class="chip active" data-hoja="simple" type="button">Simple</button>
+        <button class="chip" data-hoja="doble" type="button">Doble</button>
+      </div>
+    </div>
+    <hr class="rule">
+    <p class="example-hint" id="exampleHint" style="font-size:12.5px; color:var(--ink-soft); text-align:center; margin:-6px 0 4px;"></p>
+    <div class="items" id="itemsList"></div>
+    <button class="add-btn" id="addItemBtn" type="button">+ Agregar producto</button>
+    <div class="items-counter" id="itemsCounter"></div>
+    <div class="summary" id="summary"></div>
+    <div class="footer-row"><button class="reset-btn" id="resetBtn" type="button">Elegir otra categoría</button></div>
+    <div class="ticket-edge"></div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var STORAGE_KEY = 'precio-x-unidad:v3';
+  var MAX_ITEMS = 5;
+
+  var ICONS = {
+    papel: '<svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="13" r="8"/><circle cx="13" cy="13" r="3"/><path d="M19 18c2 1 3 3 2 6"/></svg>',
+    champu: '<svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="10" y="12" width="8" height="13" rx="2"/><rect x="12" y="7" width="4" height="5"/><rect x="11" y="4" width="6" height="3" rx="1"/></svg>',
+    suavizante: '<svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="11" width="10" height="14" rx="3"/><rect x="12" y="6" width="4" height="5" rx="1"/><rect x="11" y="4" width="6" height="2.5" rx="1"/><path d="M14 15.5c1.1 1.2 1.1 2.4 0 3.2-1.1-.8-1.1-2-0-3.2z" fill="currentColor" stroke="none"/></svg>',
+    detergente: '<svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="10" width="15" height="15" rx="2"/><rect x="12" y="5" width="7" height="5" rx="1"/><path d="M7 13c-2 0-2 6 0 6"/></svg>',
+    jabonLiquido: '<svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="10" y="13" width="8" height="12" rx="2"/><rect x="13" y="6" width="2" height="7"/><rect x="11" y="4" width="6" height="3" rx="1"/><line x1="17" y1="5.5" x2="21" y2="5.5"/></svg>',
+    cremaDental: '<svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4h4v3h-4z"/><path d="M9 7h10l-2 17a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1z"/></svg>',
+    jabonPan: '<svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10" width="18" height="9" rx="4.5"/><line x1="8" y1="14.5" x2="20" y2="14.5" opacity=".5"/></svg>',
+    jabonTocador: '<svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="14" cy="14" rx="10" ry="6"/><ellipse cx="14" cy="14" rx="6" ry="3" opacity=".4"/></svg>',
+    aceite: '<svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="14" width="10" height="11" rx="2"/><rect x="12" y="6" width="4" height="8"/><path d="M16 8l4-2"/></svg>'
+  };
+
+  var CATEGORIES = [
+    {key:'papel', label:'Papel higiénico', mode:'preset'},
+    {key:'champu', label:'Champú', mode:'volume'},
+    {key:'suavizante', label:'Suavizante', mode:'volume'},
+    {key:'detergente', label:'Detergente', mode:'volume'},
+    {key:'jabonLiquido', label:'Jabón líquido', mode:'volume'},
+    {key:'cremaDental', label:'Pasta dental', mode:'weight'},
+    {key:'jabonPan', label:'Jabón en pan', mode:'weight'},
+    {key:'jabonTocador', label:'Jabón de tocador', mode:'weight'},
+    {key:'aceite', label:'Aceite', mode:'volume'}
+  ];
+
+  var SIZES = [
+    {key:'4x30', paquetes:4, tamanio:30, label:'4x30m'},
+    {key:'4x50', paquetes:4, tamanio:50, label:'4x50m'},
+    {key:'4x80', paquetes:4, tamanio:80, label:'4x80m'},
+    {key:'4x100', paquetes:4, tamanio:100, label:'4x100m'},
+    {key:'4x110', paquetes:4, tamanio:110, label:'4x110m'},
+    {key:'custom', label:'Otro'}
+  ];
+
+  function getCategory(key){
+    for(var i=0;i<CATEGORIES.length;i++){ if(CATEGORIES[i].key === key) return CATEGORIES[i]; }
+    return null;
+  }
+  function getSize(key){
+    for(var i=0;i<SIZES.length;i++){ if(SIZES[i].key === key) return SIZES[i]; }
+    return null;
+  }
+
+  var screenCategory = document.getElementById('screenCategory');
+  var screenForm = document.getElementById('screenForm');
+  var catGrid = document.getElementById('catGrid');
+  var hojaToggleRow = document.getElementById('hojaToggleRow');
+  var hojaChips = document.getElementById('hojaChips');
+  var itemsList = document.getElementById('itemsList');
+  var addItemBtn = document.getElementById('addItemBtn');
+  var itemsCounter = document.getElementById('itemsCounter');
+  var summaryEl = document.getElementById('summary');
+  var formBreadcrumb = document.getElementById('formBreadcrumb');
+  var formTitle = document.getElementById('formTitle');
+  var exampleHint = document.getElementById('exampleHint');
+
+  var state = {
+    screen: 'category',
+    category: null,
+    hojaTipo: 'simple',
+    items: []
+  };
+
+  function escapeHtml(s){
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+  function fmtMoney(n, decimals){
+    return '$' + n.toLocaleString('es-AR', {minimumFractionDigits:decimals, maximumFractionDigits:decimals});
+  }
+
+  // ---- category grid (screen 1) ----
+  CATEGORIES.forEach(function(cat){
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'cat-btn';
+    btn.dataset.cat = cat.key;
+    btn.innerHTML = '<span class="cat-icon">' + ICONS[cat.key] + '</span><span class="cat-label">' + escapeHtml(cat.label) + '</span>';
+    catGrid.appendChild(btn);
+  });
+
+  catGrid.addEventListener('click', function(e){
+    var btn = e.target.closest('.cat-btn');
+    if(!btn) return;
+    var cat = getCategory(btn.dataset.cat);
+    state.category = cat.key;
+    state.hojaTipo = 'simple';
+    state.items = [];
+    itemsList.innerHTML = '';
+    hojaChips.querySelectorAll('.chip').forEach(function(c){ c.classList.toggle('active', c.dataset.hoja === 'simple'); });
+    addItem(true);
+    addItem(true);
+    updateFormHeader();
+    recomputeAll();
+    showScreen('form');
+    save();
+  });
+
+  hojaChips.addEventListener('click', function(e){
+    var btn = e.target.closest('.chip');
+    if(!btn) return;
+    state.hojaTipo = btn.dataset.hoja;
+    hojaChips.querySelectorAll('.chip').forEach(function(c){ c.classList.toggle('active', c === btn); });
+    updateFormHeader();
+    save();
+  });
+
+  document.getElementById('backFromForm').addEventListener('click', function(){
+    showScreen('category');
+    save();
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', function(){
+    if(!confirm('¿Elegir otra categoría? Se borran los precios cargados.')) return;
+    state.category = null;
+    showScreen('category');
+    save();
+  });
+
+  function showScreen(name){
+    state.screen = name;
+    screenCategory.hidden = name !== 'category';
+    screenForm.hidden = name !== 'form';
+    window.scrollTo({top:0, behavior:'auto'});
+  }
+
+  // ---- item card markup ----
+  function sizePickerHTML(){
+    var chips = SIZES.map(function(sz){
+      return '<button type="button" class="chip chip-sm" data-size="' + sz.key + '">' + escapeHtml(sz.label) + '</button>';
+    }).join('');
+    return '<div class="size-picker">' +
+      '<div class="subsection-label">Presentación</div>' +
+      '<div class="chip-row" data-role="size-chips">' + chips + '</div>' +
+      '<div class="custom-size-fields" data-role="custom-size" hidden>' +
+        '<label>Paquetes (N)<input type="number" class="f-paquetes" inputmode="decimal" min="0" step="any" placeholder="4"></label>' +
+        '<label>Metros c/u<input type="number" class="f-tamanio" inputmode="decimal" min="0" step="any" placeholder="30"></label>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function itemCardHTML(mode){
+    var qtyField = '';
+    var sizeBlock = '';
+    var packBlock = '';
+    if(mode === 'weight'){
+      qtyField = '<label><span class="qty-label-text">Peso</span><div class="qty-row"><input type="number" class="f-qty" inputmode="decimal" min="0" step="any" placeholder="0">' +
+        '<div class="unit-toggle"><button type="button" class="utoggle active" data-val="g">g</button><button type="button" class="utoggle" data-val="kg">kg</button></div></div></label>';
+      packBlock = '<div class="pack-row">' +
+          '<label class="pack-toggle"><input type="checkbox" class="f-pack"> Viene en pack (varias unidades)</label>' +
+          '<div class="custom-size-fields pack-fields" hidden><label>Unidades (N)<input type="number" class="f-unidades" inputmode="decimal" min="0" step="1" placeholder="3"></label></div>' +
+        '</div>';
+    } else if(mode === 'volume'){
+      qtyField = '<label>Volumen<div class="qty-row"><input type="number" class="f-qty" inputmode="decimal" min="0" step="any" placeholder="0">' +
+        '<div class="unit-toggle"><button type="button" class="utoggle active" data-val="ml">ml</button><button type="button" class="utoggle" data-val="L">L</button></div></div></label>';
+    } else if(mode === 'preset'){
+      sizeBlock = sizePickerHTML();
+    }
+    return '<div class="item-card" data-mode="' + mode + '">' +
+      '<div class="item-top"><input class="item-name" placeholder="Marca" maxlength="24"><button class="item-remove" type="button" aria-label="Quitar producto">×</button></div>' +
+      '<div class="item-grid"><label>Precio $<input type="number" class="f-precio" inputmode="decimal" min="0" step="any" placeholder="0"></label>' + qtyField + '</div>' +
+      packBlock +
+      sizeBlock +
+      '<div class="item-result"><span class="result-total"></span><span class="badge-best" hidden>mejor precio</span><span class="result-unitprice">—</span></div>' +
+    '</div>';
+  }
+
+  function addItem(skipRecompute){
+    var cards = itemsList.querySelectorAll('.item-card');
+    if(cards.length >= MAX_ITEMS) return;
+    var cat = getCategory(state.category);
+    var wrapper = document.createElement('div');
+    wrapper.innerHTML = itemCardHTML(cat.mode);
+    var node = wrapper.firstElementChild;
+    itemsList.appendChild(node);
+    updateAddState();
+    if(!skipRecompute) recomputeAll();
+  }
+
+  function updateAddState(){
+    var count = itemsList.querySelectorAll('.item-card').length;
+    itemsCounter.textContent = count + ' / ' + MAX_ITEMS + ' productos';
+    addItemBtn.disabled = count >= MAX_ITEMS;
+  }
+
+  function computeUnitPriceForCard(card){
+    var mode = card.dataset.mode;
+    var precio = parseFloat(card.querySelector('.f-precio').value);
+    if(!isFinite(precio) || precio <= 0) return null;
+
+    if(mode === 'preset'){
+      var activeSize = card.querySelector('[data-role="size-chips"] .chip.active');
+      if(!activeSize) return null;
+      var sizeKey = activeSize.dataset.size;
+      var total;
+      if(sizeKey === 'custom'){
+        var n = parseFloat(card.querySelector('.f-paquetes').value);
+        var s = parseFloat(card.querySelector('.f-tamanio').value);
+        if(!isFinite(n) || !isFinite(s) || n<=0 || s<=0) return null;
+        total = n*s;
+      } else {
+        var sz = getSize(sizeKey);
+        if(!sz) return null;
+        total = sz.paquetes * sz.tamanio;
+      }
+      if(!total || total <= 0) return null;
+      return { unitPrice: precio/total, unitLabel: 'm', displayQty: total, displayUnit: 'm' };
+    }
+
+    var qtyInput = card.querySelector('.f-qty');
+    var qty = parseFloat(qtyInput.value);
+    if(!isFinite(qty) || qty <= 0) return null;
+    var activeToggle = card.querySelector('.utoggle.active');
+    var unit = activeToggle ? activeToggle.dataset.val : (mode === 'weight' ? 'g' : 'ml');
+
+    if(mode === 'weight'){
+      var packEl = card.querySelector('.f-pack');
+      if(packEl && packEl.checked){
+        var unidades = parseFloat(card.querySelector('.f-unidades').value);
+        if(!isFinite(unidades) || unidades <= 0) return null;
+        qty = qty * unidades;
+      }
+    }
+
+    var total2, unitLabel;
+    if(mode === 'weight'){
+      total2 = unit === 'kg' ? qty : qty/1000;
+      unitLabel = 'kg';
+    } else {
+      total2 = unit === 'L' ? qty : qty/1000;
+      unitLabel = 'L';
+    }
+    return { unitPrice: precio/total2, unitLabel: unitLabel, displayQty: qty, displayUnit: unit };
+  }
+
+  function recomputeAll(){
+    var cards = itemsList.querySelectorAll('.item-card');
+    var results = [];
+    cards.forEach(function(card){ results.push({card:card, res: computeUnitPriceForCard(card)}); });
+
+    var valid = results.filter(function(r){ return r.res !== null; });
+    var minPrice = valid.length ? Math.min.apply(null, valid.map(function(r){ return r.res.unitPrice; })) : null;
+
+    results.forEach(function(r){
+      var totalEl = r.card.querySelector('.result-total');
+      var priceEl = r.card.querySelector('.result-unitprice');
+      var badge = r.card.querySelector('.badge-best');
+      if(r.res === null){
+        totalEl.textContent = '';
+        priceEl.textContent = '—';
+        r.card.classList.remove('is-best');
+        badge.hidden = true;
+      } else {
+        var decimals = r.res.unitPrice < 1 ? 3 : 2;
+        totalEl.textContent = 'total: ' + r.res.displayQty.toLocaleString('es-AR') + ' ' + r.res.displayUnit;
+        priceEl.textContent = fmtMoney(r.res.unitPrice, decimals) + ' / ' + r.res.unitLabel;
+        var isBest = valid.length > 1 && r.res.unitPrice === minPrice;
+        r.card.classList.toggle('is-best', isBest);
+        badge.hidden = !isBest;
+      }
+    });
+
+    if(valid.length === 0){
+      summaryEl.className = 'summary empty';
+      summaryEl.textContent = 'Completá los datos de al menos dos productos para comparar.';
+    } else if(valid.length === 1){
+      summaryEl.className = 'summary empty';
+      summaryEl.textContent = 'Agregá otro producto para ver cuál conviene más.';
+    } else {
+      var best = valid.filter(function(r){ return r.res.unitPrice === minPrice; })[0];
+      var name = best.card.querySelector('.item-name').value.trim() || 'esa opción';
+      var decimals = minPrice < 1 ? 3 : 2;
+      summaryEl.className = 'summary';
+      summaryEl.innerHTML = 'Más conviene <strong>' + escapeHtml(name) + '</strong> — <strong>' + fmtMoney(minPrice, decimals) + ' / ' + escapeHtml(best.res.unitLabel) + '</strong>';
+    }
+
+    save();
+  }
+
+  itemsList.addEventListener('input', recomputeAll);
+
+  itemsList.addEventListener('click', function(e){
+    var sizeChip = e.target.closest('[data-role="size-chips"] .chip');
+    if(sizeChip){
+      var row = sizeChip.parentElement;
+      row.querySelectorAll('.chip').forEach(function(c){ c.classList.toggle('active', c === sizeChip); });
+      var card = sizeChip.closest('.item-card');
+      var customBlock = card.querySelector('[data-role="custom-size"]');
+      customBlock.hidden = sizeChip.dataset.size !== 'custom';
+      recomputeAll();
+      return;
+    }
+    var toggle = e.target.closest('.utoggle');
+    if(toggle){
+      toggle.parentElement.querySelectorAll('.utoggle').forEach(function(b){ b.classList.toggle('active', b === toggle); });
+      recomputeAll();
+      return;
+    }
+    var packEl = e.target.closest('.f-pack');
+    if(packEl){
+      var packCard = packEl.closest('.item-card');
+      var packFields = packCard.querySelector('.pack-fields');
+      var qtyLabel = packCard.querySelector('.qty-label-text');
+      packFields.hidden = !packEl.checked;
+      if(qtyLabel) qtyLabel.textContent = packEl.checked ? 'Peso c/u' : 'Peso';
+      recomputeAll();
+      return;
+    }
+    var removeBtn = e.target.closest('.item-remove');
+    if(removeBtn){
+      removeBtn.closest('.item-card').remove();
+      if(!itemsList.querySelector('.item-card')) addItem(true);
+      updateAddState();
+      recomputeAll();
+    }
+  });
+
+  addItemBtn.addEventListener('click', function(){ addItem(false); });
+
+  function updateFormHeader(){
+    var cat = getCategory(state.category);
+    formTitle.textContent = cat.label;
+    if(cat.mode === 'preset'){
+      var hoja = state.hojaTipo === 'doble' ? 'hoja doble' : 'hoja simple';
+      formBreadcrumb.textContent = 'comparando · ' + hoja + ' · precio por metro';
+      hojaToggleRow.hidden = false;
+      exampleHint.textContent = 'Cada producto puede tener su propia presentación: a veces el paquete chico sale mejor por metro que el grande.';
+    } else if(cat.mode === 'weight'){
+      formBreadcrumb.textContent = 'comparando · precio por kilo';
+      hojaToggleRow.hidden = true;
+      exampleHint.textContent = 'Si viene en pack de varias unidades, tildá "Viene en pack" y cargá cuántas hay y el peso de cada una.';
+    } else {
+      formBreadcrumb.textContent = 'comparando · precio por litro';
+      hojaToggleRow.hidden = true;
+      exampleHint.textContent = 'Cada producto puede tener su propio volumen: a veces el envase chico sale mejor por litro que el grande.';
+    }
+  }
+
+  // ---- persistence ----
+  function serializeItems(){
+    var cat = getCategory(state.category);
+    return Array.prototype.map.call(itemsList.querySelectorAll('.item-card'), function(card){
+      var item = {
+        nombre: card.querySelector('.item-name').value,
+        precio: card.querySelector('.f-precio').value
+      };
+      if(cat && cat.mode === 'preset'){
+        var activeSize = card.querySelector('[data-role="size-chips"] .chip.active');
+        item.sizeKey = activeSize ? activeSize.dataset.size : '';
+        item.paquetes = card.querySelector('.f-paquetes').value;
+        item.tamanio = card.querySelector('.f-tamanio').value;
+      } else if(cat){
+        var toggle = card.querySelector('.utoggle.active');
+        item.qty = card.querySelector('.f-qty').value;
+        item.qtyUnit = toggle ? toggle.dataset.val : '';
+        if(cat.mode === 'weight'){
+          var packEl = card.querySelector('.f-pack');
+          item.pack = packEl ? packEl.checked : false;
+          item.unidades = card.querySelector('.f-unidades').value;
+        }
+      }
+      return item;
+    });
+  }
+
+  function save(){
+    try{
+      state.items = serializeItems();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }catch(e){}
+  }
+
+  function hydrateForm(){
+    itemsList.innerHTML = '';
+    var cat = getCategory(state.category);
+    var items = state.items && state.items.length ? state.items : [{}, {}];
+    items.forEach(function(item){
+      var wrapper = document.createElement('div');
+      wrapper.innerHTML = itemCardHTML(cat.mode);
+      var node = wrapper.firstElementChild;
+      node.querySelector('.item-name').value = item.nombre || '';
+      node.querySelector('.f-precio').value = item.precio || '';
+      if(cat.mode === 'preset'){
+        if(item.sizeKey){
+          node.querySelectorAll('[data-role="size-chips"] .chip').forEach(function(c){ c.classList.toggle('active', c.dataset.size === item.sizeKey); });
+          node.querySelector('[data-role="custom-size"]').hidden = item.sizeKey !== 'custom';
+        }
+        node.querySelector('.f-paquetes').value = item.paquetes || '';
+        node.querySelector('.f-tamanio').value = item.tamanio || '';
+      } else {
+        node.querySelector('.f-qty').value = item.qty || '';
+        if(item.qtyUnit){
+          node.querySelectorAll('.utoggle').forEach(function(b){ b.classList.toggle('active', b.dataset.val === item.qtyUnit); });
+        }
+        if(cat.mode === 'weight' && item.pack){
+          node.querySelector('.f-pack').checked = true;
+          node.querySelector('.pack-fields').hidden = false;
+          node.querySelector('.qty-label-text').textContent = 'Peso c/u';
+          node.querySelector('.f-unidades').value = item.unidades || '';
+        }
+      }
+      itemsList.appendChild(node);
+    });
+    updateAddState();
+    updateFormHeader();
+    recomputeAll();
+  }
+
+  function load(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return;
+      var saved = JSON.parse(raw);
+      if(!saved || !saved.category) return;
+      var cat = getCategory(saved.category);
+      if(!cat) return;
+      state.category = saved.category;
+      state.hojaTipo = saved.hojaTipo || 'simple';
+      state.items = saved.items || [];
+
+      if(cat.mode === 'preset'){
+        hojaChips.querySelectorAll('.chip').forEach(function(c){ c.classList.toggle('active', c.dataset.hoja === state.hojaTipo); });
+      }
+
+      if(saved.screen === 'form' && state.items.length){
+        hydrateForm();
+        showScreen('form');
+      }
+    }catch(e){}
+  }
+
+  load();
+
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('sw.js').catch(function(){});
+    });
+  }
+})();
+</script>

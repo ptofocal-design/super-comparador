@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#2F6E4F"/>
+  <text x="256" y="230" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-weight="700" font-size="180" fill="#F8F7F0">$</text>
+  <rect x="146" y="266" width="220" height="14" rx="7" fill="#F8F7F0"/>
+  <text x="256" y="400" text-anchor="middle" font-family="'Courier New', monospace" font-weight="700" font-size="120" fill="#F8F7F0">u</text>
+</svg>
