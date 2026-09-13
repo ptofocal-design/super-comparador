@@ -1,7 +1,7 @@
 {
   "id": "/",
-  "name": "Precio por Unidad",
-  "short_name": "Precio x Unidad",
+  "name": "Super Comparador",
+  "short_name": "Super Comparador",
   "description": "Comparador de precio por unidad para hacer las cuentas en el súper.",
   "start_url": "./",
   "scope": "./",
