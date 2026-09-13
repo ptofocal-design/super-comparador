@@ -2,6 +2,14 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<script>
+(function(){
+  try{
+    var t = localStorage.getItem('super-comparador:theme');
+    if(t === 'dark' || t === 'light'){ document.documentElement.setAttribute('data-theme', t); }
+  }catch(e){}
+})();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Super Comparador</title>
 <link rel="manifest" href="manifest.json">
@@ -42,6 +50,21 @@
     --warn:#E8685F; --shadow:0 14px 30px -14px rgba(0,0,0,.6);
     --bg-image: none;
   }
+
+  .theme-toggle{
+    position:fixed; top:calc(14px + env(safe-area-inset-top)); right:calc(14px + env(safe-area-inset-right));
+    z-index:10; width:40px; height:40px; border-radius:50%; border:1.5px solid var(--line);
+    background:var(--card); color:var(--ink); box-shadow:var(--shadow);
+    display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0;
+  }
+  .theme-toggle svg{width:20px; height:20px;}
+  .theme-toggle .icon-sun{display:none;}
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]) .theme-toggle .icon-sun{display:block;}
+    :root:not([data-theme="light"]) .theme-toggle .icon-moon{display:none;}
+  }
+  :root[data-theme="dark"] .theme-toggle .icon-sun{display:block;}
+  :root[data-theme="dark"] .theme-toggle .icon-moon{display:none;}
 
   *{box-sizing:border-box;}
   [hidden]{display:none !important;}
@@ -222,6 +245,10 @@
 
 </head>
 <body>
+<button class="theme-toggle" id="themeToggle" type="button" aria-label="Cambiar a modo oscuro">
+  <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5z"/></svg>
+  <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2.5M12 19v2.5M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2.5 12H5M19 12h2.5M4.2 19.8 6 18M18 6l1.8-1.8"/></svg>
+</button>
 <div class="app">
 
   <section class="ticket" id="screenCategory">
@@ -709,6 +736,24 @@
   }
 
   load();
+
+  var THEME_KEY = 'super-comparador:theme';
+  var themeToggle = document.getElementById('themeToggle');
+  themeToggle.addEventListener('click', function(){
+    var current = document.documentElement.getAttribute('data-theme');
+    if(!current){
+      current = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    var next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    themeToggle.setAttribute('aria-label', next === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+    try{ localStorage.setItem(THEME_KEY, next); }catch(e){}
+  });
+  (function(){
+    var saved = document.documentElement.getAttribute('data-theme');
+    var effective = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    themeToggle.setAttribute('aria-label', effective === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+  })();
 
   if('serviceWorker' in navigator){
     window.addEventListener('load', function(){
