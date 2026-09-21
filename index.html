@@ -143,6 +143,7 @@
   .custom-size-fields input{
     font-family:var(--font-body); font-weight:700; font-size:14px; border:1.5px solid var(--line);
     border-radius:12px; padding:7px 10px; background:var(--bg); color:var(--ink);
+    width:100%; min-width:0;
   }
 
   .items{display:flex; flex-direction:column; gap:12px; margin-top:14px;}
@@ -309,7 +310,7 @@
         {key:'4x100', paquetes:4, tamanio:100, label:'4x100m'},
         {key:'4x110', paquetes:4, tamanio:110, label:'4x110m'}
       ]},
-    {key:'servilletas', label:'Servilletas de papel', mode:'preset', unit:'paños', unitPhrase:'precio por paño', unitNoun:'paño', perUnitLabel:'Paños c/u',
+    {key:'servilletas', label:'Servilletas de papel', mode:'preset', unit:'paños', unitPhrase:'precio por paño o por m²', unitNoun:'paño', perUnitLabel:'Paños c/u', panoSize:true,
       sizePresets:[
         {key:'1x30', paquetes:1, tamanio:30, label:'30p'},
         {key:'1x50', paquetes:1, tamanio:50, label:'50p'},
@@ -435,6 +436,12 @@
         '<label>Paquetes (N)<input type="number" class="f-paquetes" inputmode="decimal" min="0" step="any" placeholder="1"></label>' +
         '<label>' + escapeHtml(cat.perUnitLabel) + '<input type="number" class="f-tamanio" inputmode="decimal" min="0" step="any" placeholder="0"></label>' +
       '</div>' +
+      (cat.panoSize ?
+        '<div class="subsection-label">Medida del paño en cm (opcional)</div>' +
+        '<div class="custom-size-fields pano-fields">' +
+          '<label>Ancho<input type="number" class="f-ancho" inputmode="decimal" min="0" step="any" placeholder="22"></label>' +
+          '<label>Largo<input type="number" class="f-largo" inputmode="decimal" min="0" step="any" placeholder="15"></label>' +
+        '</div>' : '') +
     '</div>';
   }
 
@@ -505,7 +512,16 @@
         total = sz.paquetes * sz.tamanio;
       }
       if(!total || total <= 0) return null;
-      return { unitPrice: precio/total, unitLabel: presetCat.unit, displayQty: total, displayUnit: presetCat.unit };
+      var res = { unitPrice: precio/total, unitLabel: presetCat.unit, displayQty: total, displayUnit: presetCat.unit };
+      if(presetCat.panoSize){
+        var ancho = parseFloat(card.querySelector('.f-ancho').value);
+        var largo = parseFloat(card.querySelector('.f-largo').value);
+        if(isFinite(ancho) && isFinite(largo) && ancho > 0 && largo > 0){
+          var areaM2 = total * ancho * largo / 10000;
+          res.area = { unitPrice: precio/areaM2, displayQty: areaM2, panos: total };
+        }
+      }
+      return res;
     }
 
     var qtyInput = card.querySelector('.f-qty');
@@ -540,6 +556,19 @@
     cards.forEach(function(card){ results.push({card:card, res: computeUnitPriceForCard(card)}); });
 
     var valid = results.filter(function(r){ return r.res !== null; });
+
+    var panoNote = '';
+    var withArea = valid.filter(function(r){ return r.res.area; });
+    if(valid.length && withArea.length === valid.length){
+      valid.forEach(function(r){
+        r.res.unitPrice = r.res.area.unitPrice;
+        r.res.unitLabel = 'm²';
+        r.res.displayQty = r.res.area.displayQty;
+        r.res.displayUnit = 'm² (' + r.res.area.panos.toLocaleString('es-AR') + ' paños)';
+      });
+    } else if(withArea.length > 0){
+      panoNote = '. Cargá la medida del paño en todos para comparar por m².';
+    }
     var minPrice = valid.length ? Math.min.apply(null, valid.map(function(r){ return r.res.unitPrice; })) : null;
 
     results.forEach(function(r){
@@ -572,7 +601,7 @@
       var name = best.card.querySelector('.item-name').value.trim() || 'esa opción';
       var decimals = minPrice < 1 ? 3 : 2;
       summaryEl.className = 'summary';
-      summaryEl.innerHTML = 'Más conviene <strong>' + escapeHtml(name) + '</strong> — <strong>' + fmtMoney(minPrice, decimals) + ' / ' + escapeHtml(best.res.unitLabel) + '</strong>';
+      summaryEl.innerHTML = 'Más conviene <strong>' + escapeHtml(name) + '</strong> — <strong>' + fmtMoney(minPrice, decimals) + ' / ' + escapeHtml(best.res.unitLabel) + '</strong>' + escapeHtml(panoNote);
     }
 
     save();
@@ -655,6 +684,10 @@
         item.sizeKey = activeSize ? activeSize.dataset.size : '';
         item.paquetes = card.querySelector('.f-paquetes').value;
         item.tamanio = card.querySelector('.f-tamanio').value;
+        if(cat.panoSize){
+          item.ancho = card.querySelector('.f-ancho').value;
+          item.largo = card.querySelector('.f-largo').value;
+        }
       } else if(cat){
         var toggle = card.querySelector('.utoggle.active');
         item.qty = card.querySelector('.f-qty').value;
@@ -693,6 +726,10 @@
         }
         node.querySelector('.f-paquetes').value = item.paquetes || '';
         node.querySelector('.f-tamanio').value = item.tamanio || '';
+        if(cat.panoSize){
+          node.querySelector('.f-ancho').value = item.ancho || '';
+          node.querySelector('.f-largo').value = item.largo || '';
+        }
       } else {
         node.querySelector('.f-qty').value = item.qty || '';
         if(item.qtyUnit){
