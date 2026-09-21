@@ -1,4 +1,4 @@
-var CACHE = 'precio-x-unidad-v9';
+var CACHE = 'precio-x-unidad-v10';
 
 self.addEventListener('install', function(e){
   e.waitUntil(caches.open(CACHE).then(function(c){ return c.add('./'); }));
